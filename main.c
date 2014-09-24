@@ -1,6 +1,6 @@
 /*
  *
- * author name(s), date, and other info here
+ * Dong Mai
  *
  */
 
@@ -17,12 +17,57 @@ void process_data(FILE *input_file) {
     // is an already-open file.  you can read data from it using
     // the fgets() C library function.  close it with the fclose()
     // built-in function
-
-
-
-
+	char line[255];
+	struct node **head = NULL;
+	while (!feof(input_file)){
+		fgets(line, 255, input_file);
+		char *s = &line;
+		int **ptr = tokenify(s);
+		for (int i = 1; i < ptr[0]+1; i++){
+			list_append(ptr[i], head);
+		}
+	}
+	list_print(*head);
+	fclose(input_file);
 }
 
+bool is_integer(const char *tok){
+	int val = atoi(tok);
+	if (strlen(tok) > 1){
+		if (val == 0){
+			return false;
+		}
+	}else if (!isdigit(tok[0]){
+		return false;
+	}else{
+		return true;
+	}
+}
+
+int** tokenify(const char *s) {
+    // your code here
+    char *str1 = strdup(s);
+    char *str2 = strdup(s);
+    char *tok;
+    int count = 0;
+    tok = strtok(str1, " \n\t");
+    while (tok != NULL) {
+		if (is_integer(tok)){
+			count++;
+		}
+        tok = strtok(NULL, " \n\t");        
+    }
+    int **ptr = malloc((count+1)*sizeof(int*));
+	ptr[0] = count;
+    tok = strtok(str2, " \n\t");
+    for (int i = 1; i < count+1; i++){
+		if (is_integer(tok)){        
+        	ptr[i] = atoi(tok);
+		}
+        tok = strtok(NULL, " \n\t");
+    }
+    return ptr;
+}
 
 void usage(char *program) {
     fprintf(stderr, "usage: %s [<datafile>]\n", program);
