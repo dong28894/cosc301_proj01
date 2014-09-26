@@ -5,10 +5,7 @@
 #include <string.h>
 
 /* your list function definitions */
-struct node {
-    int value;
-    struct node *next; 
-};
+
 
 void list_clear(struct node *list) {
     while (list != NULL) {
