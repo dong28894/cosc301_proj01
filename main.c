@@ -9,42 +9,29 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
 
 #include "list.h"
 
-void process_data(FILE *input_file) {
-    // !! your code should start here.  the input_file parameter
-    // is an already-open file.  you can read data from it using
-    // the fgets() C library function.  close it with the fclose()
-    // built-in function
-	char line[255];
-	struct node **head = NULL;
-	while (!feof(input_file)){
-		fgets(line, 255, input_file);
-		char *s = &line;
-		int **ptr = tokenify(s);
-		for (int i = 1; i < ptr[0]+1; i++){
-			list_append(ptr[i], head);
-		}
-	}
-	list_print(*head);
-	fclose(input_file);
-}
-
 bool is_integer(const char *tok){
-	int val = atoi(tok);
-	if (strlen(tok) > 1){
-		if (val == 0){
+	for (int i = 0; i < strlen(tok); i++){
+		if (i == 0){
+			if ((tok[i] != '-') & (!isdigit(tok[i]))){
+				return false;
+			}
+		}else if (!isdigit(tok[i])){
 			return false;
 		}
-	}else if (!isdigit(tok[0]){
-		return false;
-	}else{
-		return true;
 	}
+	return true;
+	
 }
 
-int** tokenify(const char *s) {
+int* tokenify(const char *s) {
     // your code here
     char *str1 = strdup(s);
     char *str2 = strdup(s);
@@ -52,22 +39,61 @@ int** tokenify(const char *s) {
     int count = 0;
     tok = strtok(str1, " \n\t");
     while (tok != NULL) {
-		if (is_integer(tok)){
+		if (strcasecmp(tok, "#") == 0){
+			break;
+		}else if (is_integer(tok)){
 			count++;
 		}
         tok = strtok(NULL, " \n\t");        
     }
-    int **ptr = malloc((count+1)*sizeof(int*));
+    int *ptr = malloc((count+1)*sizeof(int));
 	ptr[0] = count;
     tok = strtok(str2, " \n\t");
-    for (int i = 1; i < count+1; i++){
-		if (is_integer(tok)){        
+	int i = 1;
+    while (tok != NULL){
+		if (strcasecmp(tok, "#") == 0){
+			break;
+		}else if (is_integer(tok)){        
         	ptr[i] = atoi(tok);
+			i++;
 		}
         tok = strtok(NULL, " \n\t");
     }
+	free(str1);
+	free(str2);
     return ptr;
 }
+
+
+void process_data(FILE *input_file) {
+    // !! your code should start here.  the input_file parameter
+    // is an already-open file.  you can read data from it using
+    // the fgets() C library function.  close it with the fclose()
+    // built-in function
+	char line[255];	
+	struct node *head = NULL;
+	struct node **ptrToPtr = &head;
+	struct rusage usage;
+	while (fgets(line, 255, input_file) != NULL){		
+		char *s = line;
+		int *ptr = tokenify(s);
+		for (int i = 1; i < ptr[0]+1; i++){
+			list_append(ptr[i], ptrToPtr);
+		}
+		free(ptr);
+	}
+	list_sort(ptrToPtr);
+	list_print(*ptrToPtr);
+	list_clear(*ptrToPtr);
+	int callResult = getrusage(RUSAGE_SELF, &usage);
+	if (callResult == 0){
+		printf("User time: %ld.%lds\n", (usage.ru_utime).tv_sec, (usage.ru_utime).tv_usec);
+		printf("System time: %ld.%lds\n", (usage.ru_stime).tv_sec, (usage.ru_stime).tv_usec);
+	}else{
+		printf("ERROR: %s\n", strerror(errno));
+	}
+}
+
 
 void usage(char *program) {
     fprintf(stderr, "usage: %s [<datafile>]\n", program);

@@ -4,6 +4,7 @@
 #include "list.h"
 #include <string.h>
 
+
 /* your list function definitions */
 
 
@@ -17,11 +18,12 @@ void list_clear(struct node *list) {
 
 void list_print(const struct node *list) {
     int i = 0;
-    printf("In list_print\n");
+    printf("***List Contents Begin***\n");
     while (list != NULL) {
-        printf("List item %d: %s\n", i++, list->name);
+        printf("List item %d: %d\n", i++, list->value);
         list = list->next;
     }
+	printf("***List Contents End***\n");
 }
 
 int list_delete(int value, struct node **head) {
