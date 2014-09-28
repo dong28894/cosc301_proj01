@@ -23,6 +23,8 @@ bool is_integer(const char *tok){
 			if ((tok[i] != '-') & (!isdigit(tok[i]))){
 				return false;
 			}
+		}else if (tok[i] == '#'){
+			break;
 		}else if (!isdigit(tok[i])){
 			return false;
 		}
